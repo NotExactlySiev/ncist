@@ -26,7 +26,7 @@ int plugin_load_all()
 	dir = opendir(PLUGIN_DIR);
 	if (!dir)
 	{
-		log_error("Can't open plugins dir.");
+		//log_error("Can't open plugins dir.");
 		return -1;
 	}
 
@@ -52,7 +52,7 @@ int plugin_load(char *file)
 	handle = dlopen(buf, RTLD_LAZY);
 	if (!handle)
 	{
-		log_error(dlerror());
+		//log_error(dlerror());
 		return -1;
 	}
 
@@ -66,7 +66,6 @@ int plugin_load(char *file)
 	p->init(plugin_count, plugin_rx);
 	pthread_create(&p->thread, NULL, p->process, NULL);
 	log_msg("Plugin loaded: %s\t%d", p->name, p->thread);
-
 	plugin_count++;
 
 	return 0;
@@ -93,7 +92,7 @@ void plugin_rx(int id, char *str, ...)
 	off = sprintf(buf, "[%s] ", plugins[id].name);
 	vsprintf(&buf[off], str, ap);
 	pthread_mutex_lock(&outlock);
-	winappend(winout, buf);
+    append_plain(id, buf);
 	pthread_mutex_unlock(&outlock);
 	va_end(ap);
 }
