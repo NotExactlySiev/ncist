@@ -1,0 +1,6 @@
+.vscode
+plugins/*
+*.o
+*.so
+ncist
+main.py
