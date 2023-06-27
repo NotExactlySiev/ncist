@@ -8,6 +8,7 @@
 #include "main.h"
 #include "plugin.h"
 
+// TODO: ability for colors in print function
 // TODO: a bug causes the plugin callback to write garbage to the cmdline
 // TODO: printing multiple lines at once breaks the window
 // TODO: command history
@@ -18,17 +19,21 @@
 // TODO: be C89/C99 compatible?
 // TODO: iron out the full plugin API? there could be multiple types of plugins (some just req->resp)
 // TODO: adding something to a text file in a few key strokes (like log or idea)
+// FUTURE: some sort of date/time keeping for the program is needed for sure
 // FUTURE: plugins planned: log, habit/task tracker, website manager (with solsaz), markdown... thingy?
 // FUTURE: also text file viewer (with my own format)
 // FUTURE: more website APIs, github, email, etc
 // FUTURE: notifiation receiver
 // FUTURE: other windows, more than just text etc
 
+
 extern plugin_t plugins[];
 extern int plugin_count;
 
 int outline;
+char outbuf[0x8000]; // 32K
 char cmdbuf[256];
+
 WINDOW *wincmd;
 WINDOW *winout;
 pthread_mutex_t outlock;
@@ -102,8 +107,6 @@ int main(int argc, char *argv[])
 	}
 }
 
-
-
 void log_msg(char *str, ...)
 {
 	va_list ap;
@@ -129,6 +132,9 @@ void prog_exit()
 	pthread_mutex_destroy(&outlock);
 	// TODO close all plugins and join threads
 	// and dlclose() all
+	// close plugins()
+	// close terminal()
+	// save shit()
 	exit(0);
 }
 

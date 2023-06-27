@@ -16,12 +16,14 @@ extern WINDOW *winout;
 plugin_t plugins[64];
 int plugin_count = 0;
 
+// TODO: plugin_close, plugin_close_all
+
 int plugin_load_all()
 {
 	DIR *dir;
 	struct dirent *ent;
 
-	dir = opendir("./plugins");
+	dir = opendir(PLUGIN_DIR);
 	if (!dir)
 	{
 		log_error("Can't open plugins dir.");
