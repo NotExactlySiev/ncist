@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ncurses.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include "ncist.h"
 #include "main.h"
@@ -39,6 +40,23 @@ WINDOW *winout;
 pthread_mutex_t outlock;
 
 
+void sigwinch_handler()
+{
+	endwin();
+	refresh();
+	wclear(winout);
+	wclear(wincmd);
+
+	mvwin(wincmd, LINES-CMD_LINES, 0);
+	wresize(wincmd, CMD_LINES, COLS);
+	box(wincmd, 0 , 0);
+	wresize(winout, LINES-CMD_LINES, COLS);
+	box(winout, 0 , 0);
+
+	wrefresh(winout);
+	wrefresh(wincmd);
+}
+
 void init()
 {
 	int rc;
@@ -49,6 +67,8 @@ void init()
 		printf("Can't init mutex\n");
 		exit(-1);
 	}
+
+	signal(SIGWINCH, sigwinch_handler);
 
 	outline = 0;
 	initscr();
@@ -83,6 +103,16 @@ int main(int argc, char *argv[])
 	{
 		switch (c)
 		{
+			case KEY_RESIZE:
+				/*endwin();
+				refresh();
+
+				clear();
+				box(winout, 0 , 0);
+				box(wincmd, 0 , 0);
+				refresh();*/
+				log_msg("bruh");
+				break;
 			case LF:
 				cmdparse(cmdbuf);
 				cmdlen = 0;
