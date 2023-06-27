@@ -88,24 +88,28 @@ void init()
 
 	signal(SIGWINCH, sigwinch_handler);
 
-	outp = outbuf;
+	msg_clear_all();
 
 	initscr();
 	cbreak();
 	noecho();
 	refresh();
+}
 
-	for (int i = 0; i < 1024; i++)
+void msg_clear_all()
+{
+	for (int i = 0; i < msg_count; i++)
 	{
 		msgbuf[i].type = MSG_END;
 	}
 
+	outp = outbuf;
+	msg_count = 0;
 }
 
 int main(int argc, char *argv[])
 {
 	init();
-
 
 	// Ready screen
 	winout = newwin(LINES-CMD_LINES, COLS, 0, 0);
@@ -133,7 +137,6 @@ int main(int argc, char *argv[])
 				cmdparse(cmdbuf);
 				cmdlen = 0;
 				cmdbuf[0] = 0;
-				//update_winout();
 				break;
 			case BS:
 				if (cmdlen <= 0) break;
@@ -148,11 +151,7 @@ int main(int argc, char *argv[])
 
 		winclear(wincmd);
 		winprint(wincmd, 0, cmdbuf);
-
-		
-		//wrefresh(winout);
 		wrefresh(wincmd);
-		update_winout();
 	}
 }
 
@@ -201,11 +200,8 @@ void cmdparse(char *str)
 	// Non-plugin commands. Keep to a minimum
 	if CMD(str, "clear")
 	{
-		outp = outbuf;
-		msgbuf[0].type = MSG_END;
-		msg_count = 0;
+		msg_clear_all();
 		update_winout();
-		//winclear(winout);
 	}
 	else if (CMD(str, "exit") || CMD(str, "qq"))
 	{
@@ -279,9 +275,7 @@ size_t msg_render(msg_t *msg, char **lines, int **lens)
 		ret = 0;
 		p = msg->data;
 		
-		//next = strchr(p, '\n');
-		//if (next == NULL) next = msg + strlen(msg);
-		while (*p)
+		while ((int) (p - msg->data) < msg->size)
 		{
 			lines[ret] = p;
 			
@@ -303,108 +297,21 @@ size_t msg_render(msg_t *msg, char **lines, int **lens)
 
 void update_winout()
 {
-	int i, j;
 	int len, count;
 	int *lens[64];
 	char *lines[64];
-	int row;
-	msg_t *m;
-
-	char tmp[32];
+	int winline;
 
 	winclear(winout);
-
-	row = 0;
-	//for (msg_t *m = msgbuf; m->type != MSG_END; m++)
-	for (j = 0; j < msg_count; j++)
+	winline = 0;
+	for (int i = 0; i < msg_count; i++)
 	{
-		m = &msgbuf[j];
-		len = msg_render(m, &lines, &lens);
-		//len = 1;
-		for (i = 0; i < len; i++)
+		len = msg_render(&msgbuf[i], &lines, &lens);
+		for (int j = 0; j < len; j++)
 		{
-			//sprintf(tmp, "msg %d data %p", j, m->data);
-			//mvwaddnstr(winout, row+1, 2, tmp, 40);
-			mvwaddnstr(winout, row+1, 2, lines[i], lens[i]);
-			row++;
+			mvwaddnstr(winout, winline+1, 2, lines[j], lens[j]);
+			winline++;
 		}
-		//sprintf(tmp, "msg len %d", m->size);
-		//mvwaddnstr(winout, row+1, 2, tmp, 32);
 	}
-
 	wrefresh(winout);
-	//char lines[100];
-
-	/*for (int i = msg_count-1; i >= 0; i--)
-	{
-		switch(msgbuf[i].type)
-		{
-			case MSG_PLAIN:
-				msgbuf[i].data
-			default:
-
-			break;
-		}
-
-	}*/
-
-
-	/*
-	int chars, lines;
-	int maxchars, maxlines;
-	int w, h;
-	int buflen;
-	char *p, *next;
-	char tmp;
-
-	buflen = strlen(outbuf);
-
-
-	getmaxyx(winout, h, w);
-	w -= 4; h -= 2;
-
-	maxlines = h;
-	maxchars = w*h;
-
-	//log_msg("%d %d\n", maxlines, maxchars);
-
-	lines = 0;
-	chars = 0;
-	p = &outbuf[buflen-1];
-
-	while (p != outbuf)
-	{
-		//log_msg("at %p\n", p);
-		tmp = *p;
-		
-		*p = 0;
-		next = strrchr(outbuf, '\n');
-		*p = tmp;
-
-
-		if (next == NULL) next = outbuf;
-
-		chars = strlen(next);
-		//chars = (int) (next - outbuf);
-		lines++;
-
-		if (lines > maxlines || chars > maxchars) break;
-
-		p = next;
-	}
-	
-	
-
-	outline = 0;
-	
-
-	p = strtok(p, "\n");
-
-	do {
-		log_msg("%s", p);
-	} while (p = strtok(NULL, "\n"));
-
-	*/
-	//log_msg(p);
-
 }

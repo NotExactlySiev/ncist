@@ -17,6 +17,7 @@ plugin_t plugins[64];
 int plugin_count = 0;
 
 // TODO: plugin_close, plugin_close_all
+// TODO: check to see if already loaded
 
 int plugin_load_all()
 {

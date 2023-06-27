@@ -1,14 +1,20 @@
-all: ncist say.so backloggd.so
+CC 			:= gcc
+CC_FLAGS	:= -std=gnu11 -O2 -g
+
+EXEC	:= ncist
+PLUGINS	:= say.so backloggd.so
+
+all: $(EXEC) $(PLUGINS)
 .PHONY:	all
 
 ncist: main.o plugin.o
-	gcc -o $@ $^ -lncurses
+	$(CC) -o $@ $^ -lncurses
 
 %.o: %.c
-	gcc -o $@ $< -O2 -c -g
+	$(CC) -o $@ $< -c $(CC_FLAGS)
 
 %.so: %.c
-	gcc -o plugins/$@ $< -fPIC -shared -lcurl -lcjson
+	$(CC) -o plugins/$@ $< $(CC_FLAGS) -fPIC -shared -lcurl -lcjson
 
 clean:
 	rm -f ncist plugins/* *.o
